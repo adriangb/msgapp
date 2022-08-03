@@ -11,9 +11,9 @@ The design is focused on flexibility and testability, offering the ability to sw
 ```python
 import anyio
 from pydantic import BaseModel
-from consumer import App
-from consumer.producers.pubsub import PubSubQueue
-from consumer.parsers.json import PydanticParserFactory
+from msgapp import App
+from msgapp.producers.pubsub import PubSubQueue
+from msgapp.parsers.json import PydanticParserFactory
 
 class MyModel(BaseModel):
     foo: str

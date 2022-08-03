@@ -1,0 +1,17 @@
+/*
+
+!/.gitignore
+!/.github/
+!/.flake8
+!/.pre-commit-config.yaml
+!/msgapp/
+!/tests/
+!/Makefile
+!/pyproject.toml
+!/poetry.lock
+!/README.md
+!/LICENSE.txt
+!/CODE_OF_CONDUCT.md
+
+**/__pycache__
+**/.DS_Store

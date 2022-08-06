@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncContextManager, AsyncIterable, AsyncIterator
 
-from msgapp._producer import Producer, WrappedEnvelope
+from msgapp._producer import WrappedEnvelope
 
 
 class InMemoryEventWrapper:
@@ -13,7 +13,7 @@ class InMemoryEventWrapper:
         return self.message
 
 
-class InMemoryQueue(Producer[bytes]):
+class InMemoryQueue:
     def __init__(self, source: AsyncIterable[bytes]) -> None:
         self._source = source
 

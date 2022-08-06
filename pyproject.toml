@@ -36,7 +36,6 @@ mypy = "*"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-
 [tool.isort]
 profile = "black"
 
@@ -63,3 +62,4 @@ show_error_codes = true
 pretty = true
 warn_unreachable = true
 strict = true
+warn_unused_ignores = false

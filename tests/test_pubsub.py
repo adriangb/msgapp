@@ -67,7 +67,7 @@ async def pubsub_emulator_endpoint() -> AsyncIterable[str]:
 
 @pytest.fixture
 def publisher_client(pubsub_emulator_endpoint: str) -> PublisherClient:
-    client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)
+    client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)  # type: ignore[no-untyped-call]
     return PublisherClient(
         client_options=client_options,
         credentials=AnonymousCredentials(),
@@ -83,7 +83,7 @@ def topic(publisher_client: PublisherClient, pubsub_emulator_endpoint: str) -> s
 
 @pytest.fixture
 async def subscriber_client(pubsub_emulator_endpoint: str) -> SubscriberAsyncClient:
-    client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)
+    client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)  # type: ignore[no-untyped-call]
     subscriber = SubscriberAsyncClient(
         client_options=client_options,
         credentials=AnonymousCredentials(),

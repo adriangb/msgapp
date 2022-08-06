@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import AsyncContextManager, AsyncIterable
+from typing import AsyncContextManager, AsyncIterable, AsyncIterator
 
 from msgapp._producer import Producer, WrappedEnvelope
 
@@ -21,7 +21,9 @@ class InMemoryQueue(Producer[bytes]):
         async for event in self._source:
 
             @asynccontextmanager
-            async def cm(event: "WrappedEnvelope[bytes]" = InMemoryEventWrapper(event)):
+            async def cm(
+                event: "WrappedEnvelope[bytes]" = InMemoryEventWrapper(event),
+            ) -> "AsyncIterator[WrappedEnvelope[bytes]]":
                 yield event
 
             yield cm()

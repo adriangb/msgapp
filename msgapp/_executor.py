@@ -55,7 +55,7 @@ async def _bound_executor(
         yield send.send
 
 
-def concurrent_executor(concurrency: Optional[int] = 1) -> ExecutorFactory:
+def concurrent_executor(concurrency: Optional[int]) -> ExecutorFactory:
     if concurrency is None:
         return _unbound_executor
     elif concurrency == 1:

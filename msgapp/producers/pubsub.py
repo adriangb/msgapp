@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from logging import getLogger
+from math import floor
 from typing import (
     Any,
     AsyncContextManager,
@@ -44,19 +45,25 @@ class PubSubQueue(Producer[PubSubMessage]):
         subscription: str,
         *,
         client: Optional[SubscriberAsyncClient] = None,
-        ack_checkin_interval: int = 60
     ) -> None:
         self._client = client or SubscriberAsyncClient()  # type: ignore
         self._subscription = subscription
-        self._ack_checkin_interval = ack_checkin_interval
 
     async def pull(
         self,
     ) -> AsyncIterable[AsyncContextManager[WrappedEnvelope[PubSubMessage]]]:
+        subscription = await self._client.get_subscription(subscription=self._subscription)  # type: ignore
+        subscription_ack_deadline = cast(int, subscription.ack_deadline_seconds)
+        def clip(n: int, lo: int, hi: int) -> int:
+            return min(max(n, lo), hi)
+        # use 1/2 of whatever the deadline is or at least 1 second
+        # the min deadline is 10 seconds and max is 600 seconds
+        ack_check_in_interval = clip(floor(subscription_ack_deadline / 2), 1, 300)
+
         async def request_generator() -> AsyncIterator[StreamingPullRequest]:
             yield StreamingPullRequest(
                 subscription=self._subscription,
-                stream_ack_deadline_seconds=self._ack_checkin_interval,
+                stream_ack_deadline_seconds=subscription_ack_deadline,
             )
             while True:
                 yield StreamingPullRequest()
@@ -89,9 +96,9 @@ class PubSubQueue(Producer[PubSubMessage]):
                             async def extend_ack() -> None:
                                 await self._client.modify_ack_deadline(  # type: ignore
                                     ack_ids=(event.ack_id,),  # type: ignore
-                                    ack_deadline_seconds=self._ack_checkin_interval,
+                                    ack_deadline_seconds=subscription_ack_deadline,
                                 )
-                                await anyio.sleep(self._ack_checkin_interval - 1)
+                                await anyio.sleep(ack_check_in_interval)
                                 tg.start_soon(extend_ack)
 
                             tg.start_soon(extend_ack)

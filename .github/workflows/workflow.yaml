@@ -63,6 +63,7 @@ jobs:
       - uses: actions/setup-java@v3  # for pubsub emulator
         with:
           java-version: "17"
+          distribution: "temurin"
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v0'
         with:

@@ -6,23 +6,18 @@ authors = ["Adrian Garcia Badaracco <dev@adriangb.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-anyio = "^3.6.1"
-pydantic = {version = "^1.9.1", optional = true }
-google-cloud-pubsub = { version = "^2.13.4", optional = true }
-aiobotocore = { version = "^2.3.4", optional = true }
-redis = { version = "^4.3.4", optional = true }
+python = ">=3.7,<4"
+anyio = ">=3.6.1"
+pydantic = {version = ">=1.9.1", optional = true }
+google-cloud-pubsub = { version = ">=2.13.4", optional = true }
+typing-extensions = { version = "^4.3.0", python = "<3.8"}
 
 [tool.poetry.extras]
-sqs = ["aiobotocore"]
 pubsub = ["google-cloud-pubsub"]
-redis = ["redis-py"]
 json = ["pydantic"]
 dev = [
-    "aiobotocore",
     "google-cloud-pubsub",
     "pydantic",
-    "redis",
 ]
 
 [tool.poetry.dev-dependencies]

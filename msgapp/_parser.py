@@ -1,4 +1,9 @@
-from typing import Protocol, Type, TypeVar
+import sys
+from typing import Type, TypeVar
+if sys.version_info < (3, 8):
+    from typing_extensions import Protocol
+else:
+    from typing import Protocol
 
 BodyType = TypeVar("BodyType")
 BodyTypeCO = TypeVar("BodyTypeCO", covariant=True)

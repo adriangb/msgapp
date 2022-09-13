@@ -54,8 +54,10 @@ class PubSubQueue(Producer[PubSubMessage]):
     ) -> AsyncIterable[AsyncContextManager[WrappedEnvelope[PubSubMessage]]]:
         subscription = await self._client.get_subscription(subscription=self._subscription)  # type: ignore
         subscription_ack_deadline = cast(int, subscription.ack_deadline_seconds)
+
         def clip(n: int, lo: int, hi: int) -> int:
             return min(max(n, lo), hi)
+
         # use 1/2 of whatever the deadline is or at least 1 second
         # the min deadline is 10 seconds and max is 600 seconds
         ack_check_in_interval = clip(floor(subscription_ack_deadline / 2), 1, 300)

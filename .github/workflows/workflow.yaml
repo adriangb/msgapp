@@ -60,6 +60,10 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1.3.1
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+        with:
+          install_components: "alpha,beta,pubsub-emulator"
       - name: Test
         run: make test
       - name: Export Coverage Report

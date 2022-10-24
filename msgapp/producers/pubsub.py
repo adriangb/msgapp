@@ -14,6 +14,7 @@ from typing import (
 )
 
 import anyio
+from google.api_core.exceptions import PermissionDenied
 from google.pubsub import ReceivedMessage, StreamingPullRequest, SubscriberAsyncClient
 
 from msgapp._producer import Producer, WrappedEnvelope
@@ -52,8 +53,11 @@ class PubSubQueue(Producer[PubSubMessage]):
     async def pull(
         self,
     ) -> AsyncIterable[AsyncContextManager[WrappedEnvelope[PubSubMessage]]]:
-        subscription = await self._client.get_subscription(subscription=self._subscription)  # type: ignore
-        subscription_ack_deadline = cast(int, subscription.ack_deadline_seconds)
+        try:
+            subscription = await self._client.get_subscription(subscription=self._subscription)  # type: ignore
+            subscription_ack_deadline = cast(int, subscription.ack_deadline_seconds)
+        except PermissionDenied:
+            subscription_ack_deadline = 10  # [s], the minimum
 
         def clip(n: int, lo: int, hi: int) -> int:
             return min(max(n, lo), hi)

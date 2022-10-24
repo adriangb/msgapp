@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "msgapp"
-version = "0.1.2"
+version = "0.1.3"
 description = "Declarative message processing applications"
 authors = ["Adrian Garcia Badaracco <dev@adriangb.com>"]
 license = "MIT"

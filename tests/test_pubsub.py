@@ -49,9 +49,13 @@ async def pubsub_emulator_endpoint() -> AsyncIterable[str]:
         stderr = p.stderr
         assert stderr is not None
         resp = bytearray()
-        with anyio.fail_after(10):
-            while b"Server started" not in resp:
-                resp.extend(await stderr.receive())
+        try:
+            with anyio.fail_after(30):
+                while b"Server started" not in resp:
+                    resp.extend(await stderr.receive())
+        except TimeoutError:
+            print(resp.decode())
+            raise
         try:
             yield
         finally:

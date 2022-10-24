@@ -70,7 +70,7 @@ async def pubsub_emulator_endpoint() -> AsyncIterable[str]:
             yield endpoint
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def publisher_client(pubsub_emulator_endpoint: str) -> PublisherClient:
     client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)  # type: ignore[no-untyped-call]
     return PublisherClient(
@@ -79,14 +79,14 @@ def publisher_client(pubsub_emulator_endpoint: str) -> PublisherClient:
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def topic(publisher_client: PublisherClient, pubsub_emulator_endpoint: str) -> str:
     topic = f"projects/test/topics/topic-{uuid4()}"
     publisher_client.create_topic(name=topic)  # type: ignore
     return topic
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def subscriber_client(pubsub_emulator_endpoint: str) -> SubscriberAsyncClient:
     client_options = ClientOptions(api_endpoint=pubsub_emulator_endpoint)  # type: ignore[no-untyped-call]
     subscriber = SubscriberAsyncClient(
@@ -175,7 +175,8 @@ async def test_exception_nacks_message(
             data=b'{"foo": "bar", "baz": 1}',
         )
         start = time()
-        await done.wait()
+        with anyio.fail_after(30):
+            await done.wait()
         end = time()
         tg.cancel_scope.cancel()
 

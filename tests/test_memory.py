@@ -21,7 +21,8 @@ async def test_consume_messages_generator() -> None:
 
     received: List[Any] = []
 
-    async def handler(message: MyModel) -> None:
+    # make sure stringified annotations on handlers work
+    async def handler(message: "MyModel") -> None:
         received.append(message)
 
     app = App(

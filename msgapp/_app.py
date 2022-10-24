@@ -1,6 +1,12 @@
 import inspect
+import sys
 from logging import getLogger
 from typing import Any, AsyncContextManager, Awaitable, Callable, TypeVar, Union
+
+if sys.version_info < (3, 9):
+    from typing import get_type_hints
+else:
+    from typing_extensions import get_type_hints  # type: ignore
 
 from msgapp._executor import ExecutorFactory, concurrent_executor
 from msgapp._parser import BodyParserFactory
@@ -41,7 +47,9 @@ class App:
         sig = inspect.signature(self._handler)
         if len(sig.parameters) not in (1, 2):
             raise TypeError
-        model_type = next(iter(sig.parameters.values())).annotation
+        types = get_type_hints(self._handler)
+        model_param_name = next(iter(sig.parameters.values())).name
+        model_type = types[model_param_name]
         parser = self._parser.create_parser(model_type)
         if len(sig.parameters) == 1:
 

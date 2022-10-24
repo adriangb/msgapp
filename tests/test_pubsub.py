@@ -1,6 +1,7 @@
 import os
 from contextlib import asynccontextmanager
 from random import randint
+from time import time
 from typing import Any, AsyncIterable, AsyncIterator, List
 from unittest.mock import patch
 from uuid import uuid4
@@ -104,6 +105,7 @@ async def subscription(
     await subscriber_client.create_subscription(  # type: ignore
         name=subscription,
         topic=topic,
+        ack_deadline_seconds=30,  # required by test_exception_nacks_message
     )
     return subscription
 
@@ -115,7 +117,7 @@ async def test_consume_messages(
     subscriber_client: SubscriberAsyncClient,
     publisher_client: PublisherClient,
 ) -> None:
-    received: List[Any] = []
+    received: List[MyModel] = []
 
     done = anyio.Event()
 
@@ -139,3 +141,50 @@ async def test_consume_messages(
         tg.cancel_scope.cancel()
 
     assert received == [MyModel(foo="bar", baz=1)]
+
+
+@pytest.mark.anyio
+async def test_exception_nacks_message(
+    subscription: str,
+    topic: str,
+    subscriber_client: SubscriberAsyncClient,
+    publisher_client: PublisherClient,
+) -> None:
+    received: List[MyModel] = []
+
+    done = anyio.Event()
+
+    async def handler(message: MyModel) -> None:
+        if not received:
+            received.append(message)
+            raise Exception
+        else:
+            received.append(message)
+            done.set()
+
+    app = App(
+        handler,
+        producer=PubSubQueue(subscription=subscription, client=subscriber_client),
+        parser=PydanticParserFactory(),
+    )
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(app.run)
+        publisher_client.publish(  # type: ignore
+            topic=topic,
+            data=b'{"foo": "bar", "baz": 1}',
+        )
+        start = time()
+        await done.wait()
+        end = time()
+        tg.cancel_scope.cancel()
+
+    assert received == [MyModel(foo="bar", baz=1), MyModel(foo="bar", baz=1)]
+    elapsed = end - start
+    # we should have taken ~0 seconds to get the first message
+    # then we set the ack deadline to 10 seconds, so it should take
+    # ~10 seconds to get the second message
+    # in total it should take no longer than 20 seconds (giving a buffer)
+    # for overhead
+    # which is much lower than the ack_deadline we set for the subscription (30 sec)
+    assert elapsed < 20

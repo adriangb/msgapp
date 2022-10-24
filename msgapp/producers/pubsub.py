@@ -101,6 +101,7 @@ class PubSubQueue(Producer[PubSubMessage]):
 
                             async def extend_ack() -> None:
                                 await self._client.modify_ack_deadline(  # type: ignore
+                                    subscription=self._subscription,
                                     ack_ids=(event.ack_id,),  # type: ignore
                                     ack_deadline_seconds=subscription_ack_deadline,
                                 )
@@ -114,6 +115,7 @@ class PubSubQueue(Producer[PubSubMessage]):
                     except Exception:
                         # try to put the message back on the queue
                         await self._client.modify_ack_deadline(  # type: ignore
+                            subscription=self._subscription,
                             ack_ids=(event.ack_id,),  # type: ignore
                             ack_deadline_seconds=10,  # min deadline
                         )
